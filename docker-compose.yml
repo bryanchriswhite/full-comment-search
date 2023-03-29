@@ -24,6 +24,27 @@ services:
 #      timeout: 5s
 #      retries: 5
 
+  # Use via `yarn migrate` (see: package.json scripts)
+  migrate:
+    build:
+      context: .
+      dockerfile: migrate.Dockerfile
+    command: "migrate"
+    environment:
+      DATABASE_URL: postgres://pocket:pocket@postgres:5432/pocket
+      SHADOW_DATABASE_URL: postgres://pocket:pocket@postgres:5432/pocket_shadow
+      ROOT_DATABASE_URL: postgres://pocket:pocket@postgres:5432/postgres
+#    user: "${UID}:${GID}"
+    volumes:
+      - "./:/app"
+    depends_on:
+      - postgres
+  #    healthcheck:
+  #      test: [ "CMD-SHELL", "pg_isready -U pocket" ]
+  #      interval: 5s
+  #      timeout: 5s
+  #      retries: 5
+
   postgres:
     image: postgres:latest
     environment:
