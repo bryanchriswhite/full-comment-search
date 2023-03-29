@@ -5,6 +5,9 @@
   "main": "postgraphile.js",
   "type": "module",
   "scripts": {
+    "start": "docker compose up",
+    "stop": "docker compose down",
+    "build": "docker compose build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  postgraphile:
+    build:
+      context: .
+      dockerfile: postgraphile.Dockerfile
+    environment:
+      POSTGRES_USER: pocket
+      POSTGRES_PASSWORD: pocket
+      POSTGRES_DB: pocket
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      NODE_ENV: development
+    ports:
+      - "3000:3000"
+    volumes:
+      - "./:/app"
+    depends_on:
+      - postgres
+#    healthcheck:
+#      test: [ "CMD-SHELL", "pg_isready -U pocket" ]
+#      interval: 5s
+#      timeout: 5s
+#      retries: 5
+
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: pocket
+      POSTGRES_PASSWORD: pocket
+      POSTGRES_DB: pocket
+#    user: "${UID}:${GID}"
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    expose:
+      - "5432:5432"
