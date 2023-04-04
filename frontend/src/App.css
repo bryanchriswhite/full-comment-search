@@ -37,3 +37,29 @@
     transform: translateY(0px);
   }
 }
+
+/* TODO: move */
+.container {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  height: 100vh;
+}
+
+.left-column {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.right-column {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.search-results {
+  overflow: auto;
+  margin-top: 1rem;
+}
+

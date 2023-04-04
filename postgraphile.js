@@ -1,5 +1,9 @@
 import express from 'express';
+import cors from 'cors';
 import { postgraphile } from 'postgraphile';
+import PostGraphileConnectionFilterPlugin from 'postgraphile-plugin-connection-filter';
+import PostGraphileFulltextFilterPlugin from 'postgraphile-plugin-fulltext-filter';
+import PgSimplifyInflectorPlugin from '@graphile-contrib/pg-simplify-inflector';
 
 // Create a new Express application
 const app = express();
@@ -20,7 +24,16 @@ const postgraphileOptions = {
     watch: isDevEnv,
     graphiql: isDevEnv,
     pgDefaultRole: pgUser,
+    appendPlugins: [
+        PostGraphileConnectionFilterPlugin,
+        PostGraphileFulltextFilterPlugin,
+        // TODO: figure out why this isn't working
+        PgSimplifyInflectorPlugin,
+    ],
 };
+
+// Enable CORS support for all domains
+app.use(cors());
 
 // Expose the PostgreSQL table as a GraphQL API
 app.use(

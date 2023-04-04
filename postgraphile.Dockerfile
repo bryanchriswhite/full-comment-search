@@ -1,14 +1,17 @@
 # Use the official Node.js image as the base image
 FROM node:lts-alpine
 
+# Install git
+RUN apk add git
+
 # Set the working directory to /app
 WORKDIR /app
 
 # Copy the package.json and package-lock.json files to the working directory
-COPY ./package.json ./package.json
+COPY ./package.json ./yarn.lock ./
 
 # Install dependencies
-RUN yarn install
+RUN yarn install --production --frozen-lockfile
 
 # Copy the postgraphile script files to the working directory
 COPY postgraphile.js ./
