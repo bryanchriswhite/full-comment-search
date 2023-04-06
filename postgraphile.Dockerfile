@@ -14,10 +14,10 @@ COPY ./package.json ./yarn.lock ./
 RUN yarn install --production --frozen-lockfile
 
 # Copy the postgraphile script files to the working directory
-COPY postgraphile.js ./
+COPY postgraphile ./
 
 # Expose the port that PostGraphile will listen on
 EXPOSE 5000
 
 # Start PostGraphile when the container starts
-CMD ["node", "postgraphile.js"]
+CMD node ./postgraphile/main.js

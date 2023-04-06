@@ -2,14 +2,13 @@
   "name": "github",
   "version": "1.0.0",
   "description": "",
-  "main": "postgraphile.js",
+  "main": "postgraphile/postgraphile.js",
   "type": "module",
   "scripts": {
     "start": "docker compose up",
     "stop": "docker compose down",
-    "build": "docker compose build",
-    "tsc": "tsc --outDir ./build",
-    "index": "yarn tsc && node ./build/indexer.js",
+    "build": "tsc --outDir ./build",
+    "build:docker": "docker compose build",
     "migrate": "docker compose run migrate",
     "schema": "docker compose run --entrypoint yarn migrate postgraphile --export-schema-graphql ./schema.graphql",
     "test": "echo \"Error: no test specified\" && exit 1"

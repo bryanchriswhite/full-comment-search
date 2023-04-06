@@ -20,6 +20,8 @@ services:
     build:
       context: .
       dockerfile: postgraphile.Dockerfile
+    env_file:
+      - .env
     environment:
       <<: *psql-env
       NODE_ENV: development
@@ -39,6 +41,8 @@ services:
       dockerfile: indexer.Dockerfile
       args:
         SLEEP_INTERVAL_SECONDS: 500
+    env_file:
+      - .env
     environment:
       <<: *psql-env
 #      NODE_ENV:
