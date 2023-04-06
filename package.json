@@ -8,9 +8,10 @@
     "start": "docker compose up",
     "stop": "docker compose down",
     "build": "docker compose build",
+    "tsc": "tsc --outDir ./build",
+    "index": "yarn tsc && node ./build/indexer.js",
     "migrate": "docker compose run migrate",
     "schema": "docker compose run --entrypoint yarn migrate postgraphile --export-schema-graphql ./schema.graphql",
-    "index": "echo \"Error: not implemented\" && exit 1",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
