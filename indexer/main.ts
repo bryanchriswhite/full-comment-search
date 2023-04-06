@@ -1,5 +1,5 @@
 import {GraphQLClient} from 'graphql-request';
-import {fetchNext} from "../lib/fetch.js";
+import {fetchNext} from "./fetch.js";
 
 const DefaultRepo = "pokt-network/pocket"
 const ghAccessToken = process.env["GITHUB_CLASSIC_ACCESS_TOKEN"],

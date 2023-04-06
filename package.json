@@ -8,6 +8,7 @@
     "start": "docker compose up",
     "stop": "docker compose down",
     "build": "tsc --outDir ./build",
+    "clean": "rm -rf ./build/*",
     "build:docker": "docker compose build",
     "migrate": "docker compose run migrate",
     "schema": "docker compose run --entrypoint yarn migrate postgraphile --export-schema-graphql ./schema.graphql",
