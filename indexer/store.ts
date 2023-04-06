@@ -12,11 +12,13 @@ interface CreateCommentPayload {
 export async function addCommentsToDatabase(client: GraphQLClient, comments: Comment[]): Promise<void> {
     const commentInputs = comments.map((comment) => ({
         input: {
-            author: comment.author,
-            url: comment.url,
-            body: comment.body,
-            created_at: comment.created_at,
-            updated_at: comment.updated_at,
+            comment: {
+                author: comment.author,
+                url: comment.url,
+                body: comment.body,
+                createdAt: comment.createdAt,
+                updatedAt: comment.updatedAt,
+            }
         },
     }));
 

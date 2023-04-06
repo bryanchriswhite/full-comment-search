@@ -4,6 +4,6 @@ export interface Comment {
     author: string;
     url: string;
     body: string;
-    created_at: string;
-    updated_at: string;
+    createdAt: string;
+    updatedAt: string;
 }

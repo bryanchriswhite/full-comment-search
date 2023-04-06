@@ -29,8 +29,8 @@ function normalizeResponseComment(comment: ResponseComment) {
         author: comment.author.login,
         body: comment.body,
         url: comment.url,
-       created_at: comment.createdAt,
-       updated_at: comment.updatedAt,
+       createdAt: comment.createdAt,
+       updatedAt: comment.updatedAt,
     } as Comment;
 }
 
@@ -75,7 +75,7 @@ export async function fetchNext(client: GraphQLClient, {owner, name, PRs, issues
     }
 
     // sort issueComments by createdAt in descending order (i.e. newest first)
-    const sortedIssues = issueComments.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    const sortedIssues = issueComments.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     
     return Promise.resolve(sortedIssues)
 }
