@@ -23,6 +23,7 @@ const schemaName = 'public';
 const postgraphileOptions = {
     watch: isDevEnv,
     graphiql: isDevEnv,
+    enhanceGraphiql: isDevEnv,
     pgDefaultRole: pgUser,
     appendPlugins: [
         PostGraphileConnectionFilterPlugin,
