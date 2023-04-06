@@ -1,32 +1,16 @@
-import { gql, GraphQLClient } from 'graphql-request';
+import {GraphQLClient} from 'graphql-request';
 import {Comment} from "../lib/types/index.js";
+import {createCommentsMutation} from "./mutations.js";
 
-interface CreateCommentInput {
-    author: string;
-    url: string;
-    body: string;
-    created_at: string;
-    updated_at: string;
-}
-
+// TODO: move (?)
 interface CreateCommentPayload {
     createComment: {
         comment: Comment;
     };
 }
 
-async function addCommentsToDatabase(client: GraphQLClient, comments: Comment[]): Promise<void> {
-    const mutation = gql`
-        mutation CreateComment($input: CreateCommentInput!) {
-            createComment(input: $input) {
-                comment {
-                    id
-                }
-            }
-        }
-    `;
-
-    const variables = comments.map((comment) => ({
+export async function addCommentsToDatabase(client: GraphQLClient, comments: Comment[]): Promise<void> {
+    const commentInputs = comments.map((comment) => ({
         input: {
             author: comment.author,
             url: comment.url,
@@ -37,11 +21,11 @@ async function addCommentsToDatabase(client: GraphQLClient, comments: Comment[])
     }));
 
     try {
-        for (const variable of variables) {
-            const { createComment } = await client.request<CreateCommentPayload>(mutation, variable);
+        for (const commentInput of commentInputs) {
+            const { createComment } = await client.request<CreateCommentPayload>(createCommentsMutation, commentInput);
             console.log(`Comment ${createComment.comment.id} created`);
         }
     } catch (error) {
-        console.error(`Error adding comments to database: ${error.message}`);
+        console.error("Error adding comments to database", error);
     }
 }

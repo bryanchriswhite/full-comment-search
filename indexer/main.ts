@@ -1,5 +1,6 @@
 import {GraphQLClient} from 'graphql-request';
 import {fetchNext} from "./fetch.js";
+import {addCommentsToDatabase} from "./store.js";
 
 const DefaultRepo = "pokt-network/pocket"
 const ghAccessToken = process.env["GITHUB_CLASSIC_ACCESS_TOKEN"],
@@ -27,7 +28,7 @@ async function run() {
 
     console.log(comments)
 
-
+    await addCommentsToDatabase(client, comments);
 }
 
 function handleError(error: any) {

@@ -22,4 +22,4 @@ COPY lib lib
 COPY indexer ./
 
 # Set the command to run with the SLEEP_INTERVAL_SECONDS argument
-CMD yarn build && node ./build/main.js && sleep ${SLEEP_INTERVAL_SECONDS}
+CMD yarn build && node ./build/indexer/main.js && echo "sleeping for ${}" && sleep ${SLEEP_INTERVAL_SECONDS}
