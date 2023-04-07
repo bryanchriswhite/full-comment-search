@@ -1,4 +1,4 @@
-import { Comment } from '../search/types.ts';
+import {Comment} from '../search/types.ts';
 import {GraphQLClient} from "graphql-request";
 import {gql} from "graphql-request";
 
@@ -8,11 +8,26 @@ const GRAPHQL_URL = process.env.REACT_APP_GRAPHQL_URL
 
 const client = new GraphQLClient(GRAPHQL_URL);
 
-export async function handleSearch(searchQuery: string, dispatch: any) {
+// TODO: move & de-dup
+interface CommentSearchResult {
+    id: number,
+    author: string,
+    url: string,
+    body: string,
+}
+
+// TODO: move
+interface CommentsSearchResultsResponse {
+    commentsSearchResults: {
+        nodes: CommentSearchResult[]
+    }
+}
+
+export async function handleSearch(query: string, maxResults: number, dispatch: any) {
     // TODO: refactor
-    const response = await client.request(gql`
-        query($query: String!) {
-            comments(filter: {bodyTsv: {matches: $query}}, orderBy: BODY_TSV_RANK_DESC) {
+    const response: CommentsSearchResultsResponse = await client.request(gql`
+        query($query: String!, $maxResults: Int!) {
+            commentsSearchResults(first: $maxResults, query: $query) {
                 nodes {
                     id
                     author
@@ -21,10 +36,12 @@ export async function handleSearch(searchQuery: string, dispatch: any) {
                 }
             }
         }
-    `)
+    `, {
+        query,
+        maxResults,
+    })
 
-    const result = await response.;
-    const comments: Comment[] = result.data.comments;
+    const {nodes: comments} = response.commentsSearchResults;
 
     dispatch({
         type: 'search/setSearchResults',

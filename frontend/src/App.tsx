@@ -16,11 +16,13 @@ function App() {
     };
 
     const handleSearchClick = () => {
-        handleSearch(searchQuery, dispatch);
+        // TODO:
+        handleSearch(searchQuery, 100, dispatch);
     };
 
     const handleCommentClick = (url: string) => {
-        setSelectedCommentUrl(url);
+        // setSelectedCommentUrl(url);
+        window.open(url, "_blank")
     };
 
     return (
