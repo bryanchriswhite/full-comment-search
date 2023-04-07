@@ -1,16 +1,29 @@
 version: '3.8'
 
+#x-health-check: &health-check
+#  healthcheck:
+#    test: [ "CMD-SHELL", "pg_isready -U pocket" ]
+#    interval: 5s
+#    timeout: 5s
+#    retries: 5
+
+x-psql-env: &psql-env
+    POSTGRES_USER: pocket
+    POSTGRES_PASSWORD: pocket
+    POSTGRES_DB: pocket
+    POSTGRES_HOST: postgres
+    POSTGRES_PORT: 5432
+
 services:
   postgraphile:
+#    <<: *health-check
     build:
       context: .
       dockerfile: postgraphile.Dockerfile
+    env_file:
+      - .env
     environment:
-      POSTGRES_USER: pocket
-      POSTGRES_PASSWORD: pocket
-      POSTGRES_DB: pocket
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
+      <<: *psql-env
       NODE_ENV: development
     ports:
       - "3000:3000"
@@ -18,41 +31,52 @@ services:
       - "./:/app"
     depends_on:
       - postgres
-#    healthcheck:
-#      test: [ "CMD-SHELL", "pg_isready -U pocket" ]
-#      interval: 5s
-#      timeout: 5s
-#      retries: 5
+    restart: on-failure
+
+
+  indexer:
+    #    <<: *health-check
+    build:
+      context: .
+      dockerfile: indexer.Dockerfile
+      args:
+        SLEEP_INTERVAL_SECONDS: 500
+    env_file:
+      - .env
+    environment:
+      <<: *psql-env
+#      NODE_ENV:
+#    command: "yarn index && sleep 500"
+    restart: unless-stopped
+    volumes:
+      - "./:/app"
+    depends_on:
+      - postgres
+    restart: on-failure
 
   # Use via `yarn migrate` (see: package.json scripts)
   migrate:
     build:
       context: .
       dockerfile: migrate.Dockerfile
-    command: "migrate"
+    command: "migrate && exit"
     environment:
       DATABASE_URL: postgres://pocket:pocket@postgres:5432/pocket
       SHADOW_DATABASE_URL: postgres://pocket:pocket@postgres:5432/pocket_shadow
       ROOT_DATABASE_URL: postgres://pocket:pocket@postgres:5432/postgres
-#    user: "${UID}:${GID}"
+    #    user: "${UID}:${GID}"
     volumes:
       - "./:/app"
     depends_on:
       - postgres
-  #    healthcheck:
-  #      test: [ "CMD-SHELL", "pg_isready -U pocket" ]
-  #      interval: 5s
-  #      timeout: 5s
-  #      retries: 5
+
 
   postgres:
     image: postgres:latest
     environment:
-      POSTGRES_USER: pocket
-      POSTGRES_PASSWORD: pocket
-      POSTGRES_DB: pocket
+      <<: *psql-env
 #    user: "${UID}:${GID}"
     volumes:
       - ./data:/var/lib/postgresql/data
-    expose:
+    ports:
       - "5432:5432"

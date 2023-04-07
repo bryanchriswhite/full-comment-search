@@ -2,20 +2,28 @@
   "name": "github",
   "version": "1.0.0",
   "description": "",
-  "main": "postgraphile.js",
+  "main": "postgraphile/postgraphile.js",
   "type": "module",
   "scripts": {
     "start": "docker compose up",
     "stop": "docker compose down",
-    "build": "docker compose build",
+    "build": "tsc --outDir ./build",
+    "clean": "rm -rf ./build/*",
+    "build:docker": "docker compose build",
     "migrate": "docker compose run migrate",
+    "schema": "docker compose run --entrypoint yarn migrate postgraphile --export-schema-graphql ./schema.graphql",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@graphile-contrib/pg-simplify-inflector": "^6.1.0",
+    "cors": "^2.8.5",
     "express": "^4.18.2",
     "graphile-migrate": "^1.4.1",
-    "postgraphile": "^4.13.0"
+    "graphql-request": "^5.2.0",
+    "postgraphile": "^4.13.0",
+    "postgraphile-plugin-connection-filter": "^2.3.0",
+    "postgraphile-plugin-fulltext-filter": "git+https://github.com/pulsedotso/postgraphile-plugin-fulltext-filter.git"
   }
 }

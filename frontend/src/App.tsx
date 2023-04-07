@@ -1,58 +1,49 @@
-import React from 'react';
-import logo from './logo.svg';
-import { Counter } from './features/counter/Counter';
+import React, {useState} from 'react';
+import {useDispatch, useSelector} from 'react-redux';
 import './App.css';
+import {handleSearch} from './components/search.tsx';
+import {Comment} from "./search/types.ts"
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <Counter />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <span>
-          <span>Learn </span>
-          <a
-            className="App-link"
-            href="https://reactjs.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux-toolkit.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux Toolkit
-          </a>
-          ,<span> and </span>
-          <a
-            className="App-link"
-            href="https://react-redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React Redux
-          </a>
-        </span>
-      </header>
-    </div>
-  );
+    const [searchQuery, setSearchQuery] = useState('');
+    const [selectedCommentUrl, setSelectedCommentUrl] = useState('');
+    const dispatch = useDispatch();
+    const searchResults = useSelector((state: any) => state.search.searchResults);
+
+    const handleSearchQueryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const query = event.target.value;
+        setSearchQuery(query);
+    };
+
+    const handleSearchClick = () => {
+        // TODO:
+        handleSearch(searchQuery, 100, dispatch);
+    };
+
+    const handleCommentClick = (url: string) => {
+        // setSelectedCommentUrl(url);
+        window.open(url, "_blank")
+    };
+
+    return (
+        <div className="container">
+            <div className="left-column">
+                <input type="text" value={searchQuery} onChange={handleSearchQueryChange} placeholder="Search query"/>
+                <button onClick={handleSearchClick}>Search</button>
+                <div className="search-results">
+                    {searchResults.map((comment: Comment) => (
+                        <div key={comment.id} onClick={() => handleCommentClick(comment.url)}>
+                            <h3>{comment.author}</h3>
+                            <p>{comment.body}</p>
+                        </div>
+                    ))}
+                </div>
+            </div>
+            <div className="right-column">
+                {selectedCommentUrl && <iframe src={selectedCommentUrl} style={{width: '100%', height: '100%'}}/>}
+            </div>
+        </div>
+    );
 }
 
 export default App;

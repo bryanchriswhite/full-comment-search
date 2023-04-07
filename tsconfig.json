@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "esnext",
+    "moduleResolution": "nodenext",
+    "outDir": "build",
+    "strict": true,
+    "esModuleInterop": true
+  },
+  "include": [
+    "./indexer/main.ts"
+  ],
+  "exclude": ["node_modules"]
+}

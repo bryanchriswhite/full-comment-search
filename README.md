@@ -9,12 +9,9 @@ npm i -g yarn
 # Install nodejs dependencies
 yarn install
 
-# Start the postgraphile server
+# Start everything
 yarn start
 # (may need to restart after initial DB start)
-
-# Run initial DB migrations
-yarn migrate migrate
 ```
 
 ## Database Migrations
