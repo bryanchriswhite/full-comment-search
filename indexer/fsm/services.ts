@@ -1,9 +1,53 @@
 import {Context} from "./types.js";
 import {addCommentsToDatabase} from "../store.js";
 
-export const fetchCommentables = async (context: Context, event: any) => {
-    // const response = await fetch('/api/commentables');
-    // const commentables = await response.json();
+// TODO: remove
+export async function logUpdated(context: Context, event: any) {
+    console.log("updated state!");
+}
+
+export async function logError(context: Context, event: any) {
+    // TODO:
+    console.log("event: ", event)
+    // console.error(event.error)
+}
+
+export async function queueAll(context: Context, event: any) {
+    await Promise.all([
+        queueCommentables(context, event),
+        queueComments(context, event),
+    ]);
+
+    // console.log("EVENT:")
+    // console.log(event.data.machine)
+    event.data.machine.send({type: "complete"})
+    // return {
+    //     type:
+    // }
+}
+
+export async function queueCommentables (context: Context, event: any) {
+
+    console.log("queueCommentables called")
+
+    await new Promise<void>(resolve => {
+        setTimeout(() => {
+            resolve();
+        }, 500);
+    });
+
+    console.log("queueCommentables timeout");
+    // return {
+    //     type: 'COMMENTABLES_UPDATED',
+    //     commentables: [],
+    // };
+}
+
+export async function queueComments(context: Context, event: any) {
+    // TODO:
+    // - dequeue pendingComments
+    // - query GitHub
+    // - enqueue storeComments
 
     // const comments = await fetchNext(ghClient, {
     //     owner,
@@ -13,32 +57,60 @@ export const fetchCommentables = async (context: Context, event: any) => {
     // })
     //
     // console.log(comments)
-    //
+
+    console.log("queueComments called")
+    await new Promise<void>(resolve => {
+        setTimeout(() => {
+            resolve();
+            console.log("queueComments timeout");
+        }, 1000);
+    });
+
+    // return {
+    //     type: 'COMMENTABLES_UPDATED',
+    //     // commentables: context.commentables,
+    //     commentables: [],
+    // };
+}
+
+export async function upsertAll(context: Context, event: any) {
+    await Promise.all([
+        upsertCommentables(context, event),
+        upsertComments(context, event),
+    ]);
+
+    // console.log("EVENT:")
+    // console.log(arguments)
+    event.data.machine.send({type: "complete"})
+}
+
+export async function upsertCommentables(context: Context, event: any) {
+    // TODO:
+    // - dequeue storeCommentables
+    // - send postgraphile mutation
+    // - return stats
+    console.log("upsertCommentables called")
+    await new Promise<void>(resolve => {
+        setTimeout(() => {
+            resolve();
+            console.log("upsertCommentables timeout");
+        }, 700);
+    });
+}
+
+export async function upsertComments(context: Context, event: any) {
+    // TODO:
+    // - dequeue storeComments
+    // - send postgraphile mutation
+    // - return stats
+
+    console.log("upsertComments called")
+    await new Promise<void>(resolve => {
+        setTimeout(() => {
+            resolve();
+            console.log("upsertComments timeout");
+        }, 1200);
+    });
+
     // await addCommentsToDatabase(pgClient, comments);
-
-    console.log("fetchCommentables called")
-
-    return {
-        type: 'COMMENTABLES_UPDATED',
-        commentables: [],
-    };
-};
-
-export const paginateComments = async (context: Context, event: any) => {
-    // const commentableIds = context.commentables.map((commentable) => commentable.id);
-    //
-    // for (const id of commentableIds) {
-    //     const commentable = context.commentables.find((commentable) => commentable.id === id);
-    //
-    //     const response = await fetch(`/api/commentables/${id}/comments?page=${commentable.comments.length + 1}`);
-    //     const comments = await response.json();
-    //
-    //     commentable.comments = [...commentable.comments, ...comments];
-    // }
-
-    return {
-        type: 'COMMENTABLES_UPDATED',
-        // commentables: context.commentables,
-        commentables: [],
-    };
-};
+}
