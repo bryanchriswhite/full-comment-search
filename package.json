@@ -5,8 +5,10 @@
   "main": "postgraphile/postgraphile.js",
   "type": "module",
   "scripts": {
-    "start": "docker compose up",
-    "stop": "docker compose down",
+    "up": "docker compose up",
+    "down": "docker compose down",
+    "start": "docker compose start",
+    "stop": "docker compose stop",
     "build": "tsc --outDir ./build",
     "clean": "rm -rf ./build/*",
     "build:docker": "docker compose build",
@@ -18,6 +20,8 @@
   "license": "MIT",
   "dependencies": {
     "@graphile-contrib/pg-simplify-inflector": "^6.1.0",
+    "@types/bull": "^4.10.0",
+    "bull": "^4.10.4",
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "graphile-migrate": "^1.4.1",
