@@ -1,6 +1,6 @@
 import {GraphQLClient} from 'graphql-request';
-import {fetchNext} from "./fetch.js";
-import {addCommentsToDatabase} from "./store.js";
+import commentableMachine from "./fsm/machine.js";
+import {interpret} from "xstate";
 
 const defaults = {
     repo: "pokt-network/pocket",
@@ -33,16 +33,9 @@ const pgClient = new GraphQLClient(POSTGRAPHILE_ENDPOINT, {
 });
 
 async function run() {
-    const comments = await fetchNext(ghClient, {
-        owner,
-        name,
-        PRs: {max: 3, comments: {max: 100}},
-        issues: {max: 3, comments: {max: 100}},
-    })
+    const stateMachine = interpret(commentableMachine).start();
 
-    console.log(comments)
-
-    await addCommentsToDatabase(pgClient, comments);
+    stateMachine.send('FETCH_COMMENTABLES');
 }
 
 function handleError(error: any) {

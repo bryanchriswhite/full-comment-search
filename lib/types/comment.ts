@@ -7,3 +7,9 @@ export interface Comment {
     createdAt: string;
     updatedAt: string;
 }
+
+// TODO: update
+export interface Commentable {
+    id: string;
+    comments: any[];
+}

@@ -24,6 +24,7 @@
     "graphql-request": "^5.2.0",
     "postgraphile": "^4.13.0",
     "postgraphile-plugin-connection-filter": "^2.3.0",
-    "postgraphile-plugin-fulltext-filter": "git+https://github.com/pulsedotso/postgraphile-plugin-fulltext-filter.git"
+    "postgraphile-plugin-fulltext-filter": "git+https://github.com/pulsedotso/postgraphile-plugin-fulltext-filter.git",
+    "xstate": "^4.37.1"
   }
 }
