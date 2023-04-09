@@ -31,59 +31,50 @@ export function newUpdateMachine(context: Context) {
                             states: {
                                 queuing: {
                                     invoke: [
+                                        // {
+                                        //     src: "queueAll",
+                                        //     // onError: ?,
+                                        // },
                                         {
-                                            src: "queueAll",
-                                            // onError: ?,
-                                        },
+                                            src: async function(c: Context, e: any) {
+                                                console.log("post queueAll invoke");
+                                                e.data.machine.send("updating.queuing.queuingComplete")
+                                            }
+                                        }
                                     ],
-                                    // onDone: "complete",
-
+                                    onDone: "queuingComplete",
                                 },
-                                complete: {
+                                queuingComplete: {
                                     // type: "final",
                                     invoke: {
-                                        src: async (context: Context, event: any) => {
-                                            console.log("queueing complete state");
+                                        src: async function (c: Context, e: any) {
+                                            console.log("queuingComplete state");
                                         }
                                     }
                                 },
 
                             }
                         },
-                        upserting: {
-                            initial: 'upserting',
-                            states: {
-                                upserting: {
-                                    invoke: [
-                                        {
-                                            src: "upsertAll",
-                                            // onError: ?,
-                                        },
-                                    ],
-                                    // onDone: "complete",
-                                },
-                                complete: {
-                                    // type: "final",
-                                    invoke: {
-                                        src: async (context: Context, event: any) => {
-                                            console.log("upserting complete state")
-                                        }
-                                    }
-                                },
-                            },
-                        },
-                        udpated: {
-                            // type: "final"
-                            invoke: {
-                                src: async (context: Context, event: any) => {
-                                    console.log("nested updated state")
-                                }
-                            }
-                        }
+                        // upserting: {
+                        //     initial: 'upserting',
+                        //     states: {
+                        //         upserting: {
+                        //             invoke: [
+                        //                 {
+                        //                     src: "upsertAll",
+                        //                     // onError: ?,
+                        //                 },
+                        //             ],
+                        //             onDone: "upsertingComplete",
+                        //         },
+                        //         upsertingComplete: {
+                        //             type: "final",
+                        //         },
+                        //     },
+                        // },
                     },
                 },
                 updated: {
-                    // type: "final",
                     invoke: {src: "logUpdated"}
                 },
             },

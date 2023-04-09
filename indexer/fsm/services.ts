@@ -20,7 +20,7 @@ export async function queueAll(context: Context, event: any) {
 
     // console.log("EVENT:")
     // console.log(event.data.machine)
-    event.data.machine.send({type: "complete"})
+    // event.data.machine.send({type: "completed"})
     // return {
     //     type:
     // }
@@ -81,7 +81,7 @@ export async function upsertAll(context: Context, event: any) {
 
     // console.log("EVENT:")
     // console.log(arguments)
-    event.data.machine.send({type: "complete"})
+    // event.data.machine.send({type: "completed"})
 }
 
 export async function upsertCommentables(context: Context, event: any) {
