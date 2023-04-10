@@ -42,16 +42,16 @@ export function newUpdateMachine(context: Context) {
                                             }
                                         }
                                     ],
-                                    onDone: "queuingComplete",
+                                    // onDone: "queuingComplete",
                                 },
-                                queuingComplete: {
-                                    // type: "final",
-                                    invoke: {
-                                        src: async function (c: Context, e: any) {
-                                            console.log("queuingComplete state");
-                                        }
-                                    }
-                                },
+                                // queuingComplete: {
+                                //     // type: "final",
+                                //     invoke: {
+                                //         src: async function (c: Context, e: any) {
+                                //             console.log("queuingComplete state");
+                                //         }
+                                //     }
+                                // },
 
                             }
                         },

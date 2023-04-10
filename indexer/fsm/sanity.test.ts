@@ -1,39 +1,92 @@
-import { interpret } from 'xstate';
-import { createMachine } from 'xstate';
+import {interpret} from 'xstate';
+import {createMachine} from 'xstate';
 
 describe('Parallel state machine', () => {
     const parallelMachine = createMachine({
         id: 'parallelMachine',
-        type: 'parallel',
+        predictableActionArguments: true,
+        initial: "one",
         states: {
-            A: {
-                initial: 'idle',
+            one: {
+                type: 'parallel',
                 states: {
-                    idle: { on: { START: 'active' } },
-                    active: { on: { STOP: 'idle' } }
-                }
+                    A: {
+                        initial: 'idle',
+                        states: {
+                            // idle: {on: {START: 'active'}},
+                            // active: {type: "final"}
+                            idle: {
+                                invoke: {
+                                    src: async (c, e) => {
+                                        console.log("one.A.idle state");
+                                        await new Promise<void>(resolve => {
+                                            setTimeout(() => {
+                                                console.log("one.A.idle  timeout")
+                                                resolve();
+                                            }, 1000)
+                                        });
+                                    },
+                                    onDone: {
+                                        target: "active",
+                                        actions: ["aDone"]
+                                    }
+                                },
+                            },
+                            active: {
+                                type: "final",
+                                invoke: {
+                                    src: async (c, e) => {
+                                        console.log("one.A.active state");
+                                    }
+                                },
+                            }
+                        }
+                    },
+                    B: {
+                        initial: 'waiting',
+                        states: {
+                            waiting: {on: {GO: 'moving'}},
+                            moving: {
+                                type: "final",
+                                invoke: {
+                                    src: async (c, e) => {
+                                        console.log("one.B.moving state");
+                                    }
+                                }
+                            }
+                        }
+                    },
+                },
+                onDone: 'finished',
             },
-            B: {
-                initial: 'waiting',
-                states: {
-                    waiting: { on: { GO: 'moving' } },
-                    moving: { on: { STOP: 'waiting' } }
+            finished: {
+                type: "final",
+                invoke: {
+                    src: async (c, e) => {
+                        console.log("finished state!")
+                    }
                 }
             }
         },
-        onDone: 'finished'
+    }, {
+        actions: {
+            aDone: (c, e) => {
+                console.log("aDone action");
+            }
+        }
     });
 
     it('should transition to the final state after the parallel states have completed', (done) => {
         const service = interpret(parallelMachine).onDone(() => {
-            expect(service.state.value).toBe('finished');
+            expect(service.state.value).toBe({one: {A: 'active', B: 'moving'}});
             done();
         });
 
         service.start();
-        service.send('START', { to: 'A' });
-        service.send('GO', { to: 'B' });
-        service.send('STOP', { to: 'A' });
-        service.send('STOP', { to: 'B' });
+        // service.send({ type: 'START', to: 'A' });
+        service.send({type: 'GO', to: 'B'});
+        setTimeout(() => {
+            console.log("test timeout");
+        }, 1200)
     });
 });
