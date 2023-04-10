@@ -9,6 +9,7 @@ describe('Parallel state machine', () => {
         states: {
             one: {
                 type: 'parallel',
+                onDone: 'finished',
                 states: {
                     A: {
                         initial: 'idle',
@@ -21,7 +22,7 @@ describe('Parallel state machine', () => {
                                         console.log("one.A.idle state");
                                         await new Promise<void>(resolve => {
                                             setTimeout(() => {
-                                                console.log("one.A.idle  timeout")
+                                                console.log("delay one.A.idle")
                                                 resolve();
                                             }, 1000)
                                         });
@@ -57,7 +58,6 @@ describe('Parallel state machine', () => {
                         }
                     },
                 },
-                onDone: 'finished',
             },
             finished: {
                 type: "final",
@@ -78,7 +78,8 @@ describe('Parallel state machine', () => {
 
     it('should transition to the final state after the parallel states have completed', (done) => {
         const service = interpret(parallelMachine).onDone(() => {
-            expect(service.state.value).toBe({one: {A: 'active', B: 'moving'}});
+            expect(service.state.value).toBe('finished');
+            console.log("HELLO!")
             done();
         });
 
@@ -86,7 +87,7 @@ describe('Parallel state machine', () => {
         // service.send({ type: 'START', to: 'A' });
         service.send({type: 'GO', to: 'B'});
         setTimeout(() => {
-            console.log("test timeout");
+            console.log("delay test");
         }, 1200)
     });
 });

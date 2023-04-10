@@ -30,51 +30,44 @@ export function newUpdateMachine(context: Context) {
                             initial: 'queuing',
                             states: {
                                 queuing: {
-                                    invoke: [
-                                        // {
-                                        //     src: "queueAll",
-                                        //     // onError: ?,
-                                        // },
-                                        {
-                                            src: async function(c: Context, e: any) {
-                                                console.log("post queueAll invoke");
-                                                e.data.machine.send("updating.queuing.queuingComplete")
-                                            }
-                                        }
-                                    ],
-                                    // onDone: "queuingComplete",
+                                    invoke: {
+                                        src: async function (c: Context, e: any) {
+                                            console.log("post queueAll invoke");
+                                            e.data.machine.send("queuingComplete")
+                                        },
+                                        onDone: "queuingComplete",
+                                    },
                                 },
-                                // queuingComplete: {
-                                //     // type: "final",
-                                //     invoke: {
-                                //         src: async function (c: Context, e: any) {
-                                //             console.log("queuingComplete state");
-                                //         }
-                                //     }
-                                // },
+                                queuingComplete: {
+                                    type: "final",
+                                    invoke: {
+                                        src: async function (c: Context, e: any) {
+                                            console.log("queuingComplete state");
+                                        }
+                                    }
+                                },
 
                             }
                         },
-                        // upserting: {
-                        //     initial: 'upserting',
-                        //     states: {
-                        //         upserting: {
-                        //             invoke: [
-                        //                 {
-                        //                     src: "upsertAll",
-                        //                     // onError: ?,
-                        //                 },
-                        //             ],
-                        //             onDone: "upsertingComplete",
-                        //         },
-                        //         upsertingComplete: {
-                        //             type: "final",
-                        //         },
-                        //     },
-                        // },
+                        upserting: {
+                            initial: 'upserting',
+                            states: {
+                                upserting: {
+                                    invoke: {
+                                        src: "upsertAll",
+                                        onDone: "upsertingComplete",
+                                        // onError: ?,
+                                    },
+                                },
+                                upsertingComplete: {
+                                    type: "final",
+                                },
+                            },
+                        },
                     },
                 },
                 updated: {
+                    type: "final",
                     invoke: {src: "logUpdated"}
                 },
             },
