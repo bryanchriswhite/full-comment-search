@@ -1,11 +1,16 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
+    "target": "es2022",
     "module": "esnext",
-    "moduleResolution": "nodenext",
+    "moduleResolution": "node",
     "outDir": "build",
     "strict": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "*": ["*", "*.js"]
+    }
   },
   "include": [
     "./indexer/main.ts"

@@ -1,3 +1,17 @@
+export type ResponseCommentable = ResponseIssue | ResponsePR
+
+// ResponseComment is the interface of the GitHub graphql Comment object.
+export interface ResponseComment {
+    id: string;
+    author: {
+        login: string;
+    };
+    body: string;
+    url: string;
+    createdAt: String;
+    updatedAt: String;
+}
+
 export interface IssueCommentsResponse {
     repository: {
         issues: {
@@ -26,14 +40,30 @@ export interface ResponseIssue {
     };
 }
 
-// ResponseComment is the interface of the GitHub graphql Comment object.
-export interface ResponseComment {
-    id: string;
-    author: {
-        login: string;
+export interface PRCommentsResponse {
+    repository: {
+        issues: {
+            nodes: ResponseIssue[];
+            pageInfo: {
+                hasNextPage: boolean;
+                endCursor: string;
+            };
+        };
     };
-    body: string;
+}
+
+// ResponseIssue is the interface of the GitHub graphql Issue object.
+export interface ResponsePR {
+    id: string;
+    title: string;
     url: string;
-    createdAt: String;
-    updatedAt: String;
+    createdAt: string;
+    updatedAt: string;
+    comments: {
+        nodes: ResponseComment[];
+        pageInfo: {
+            hasNextPage: boolean;
+            endCursor: string;
+        };
+    };
 }

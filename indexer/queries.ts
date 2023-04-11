@@ -5,9 +5,9 @@ export const pullRequestCommentsQuery = gql`
         $owner: String!,
         $name: String!,
         $maxPRs: Int!,
+        $maxComments: Int!,
         $afterPR: String,
         $beforePR: String,
-        $maxComments: Int!,
         $afterComment: String,
         $beforeComment: String
     ) {

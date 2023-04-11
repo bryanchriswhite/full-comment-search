@@ -8,10 +8,12 @@ export interface paginatedQueryArgs {
 export interface commentsQueryArgs extends paginatedQueryArgs {
     comments: paginatedQueryArgs
 }
+
+// TODO: refactor
 export interface nextQueryArgs {
     owner: string,
     // TODO: rename to `repo` (?)
     name: string,
-    PRs: commentsQueryArgs,
-    issues: commentsQueryArgs,
+    PRs?: commentsQueryArgs,
+    issues?: commentsQueryArgs,
 }
