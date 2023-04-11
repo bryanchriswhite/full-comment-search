@@ -1,7 +1,7 @@
 import {GraphQLClient} from "graphql-request";
-import {issueCommentsQuery} from "./queries.js";
+import {issueCommentsQuery} from "./queries";
 import {nextQueryArgs, ResponseIssue, ResponseComment, Comment} from "../lib/types/index.js";
-import {IssueCommentsResponse} from "../lib/types/response.js";
+import {IssueCommentsResponse} from "../lib/types";
 
 // TODO: move
 /**

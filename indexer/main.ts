@@ -1,8 +1,8 @@
 import {GraphQLClient} from 'graphql-request';
-import {newUpdateMachine} from "./fsm/machine.js";
+import {newUpdateMachine} from "./fsm/machine";
 import {interpret} from "xstate";
-import {Context} from "./fsm/types.js";
-import {Comment, Commentable} from "../lib/types/index.js";
+import {Context} from "./fsm/types";
+import {Comment, Commentable} from "../lib/types";
 
 // TODO: check `NODE_ENV`
 const defaults = {
@@ -30,26 +30,26 @@ const ghClient = new GraphQLClient(GITHUB_GRAPHQL_URL, {
     },
 });
 
+// TODO: add authentication
 // postgraphile graphql client
-const gqlClient = new GraphQLClient(POSTGRAPHILE_URL, {
-    // headers: {
-    //     Authorization: `Bearer ${ghAccessToken}`,
-    // },
-});
+const gqlClient = new GraphQLClient(POSTGRAPHILE_URL);
 
+// TODO: replace with `Bull` queues
 const commentablesQueue: Commentable[] = [];
 const commentsQueue: Comment[] = [];
 
 async function run() {
     const context: Context = {
         gqlClient,
+        owner,
+        name,
         commentablesQueue,
         commentsQueue,
     }
     const stateMachine = interpret(newUpdateMachine(context)).start();
 
     // TODO: moove 'UPDATE' to const
-    stateMachine.send({type: 'UPDATE', data: {machine: stateMachine}});
+    stateMachine.send({type: 'UPDATE'});
 }
 
 function handleError(error: any) {

@@ -4,8 +4,8 @@ import {
     upsertAll,
     logError,
     logUpdated
-} from "./services.js";
-import {Context} from "./types.js";
+} from "./services";
+import {Context} from "./types";
 import {GraphQLClient} from "graphql-request";
 
 // TODO: decompose into multiple machines
@@ -31,21 +31,12 @@ export function newUpdateMachine(context: Context) {
                             states: {
                                 queuing: {
                                     invoke: {
-                                        src: async function (c: Context, e: any) {
-                                            console.log("post queueAll invoke");
-                                            e.data.machine.send("queuingComplete")
-                                        },
-                                        onDone: "queuingComplete",
+                                        src: "queueAll",
+                                        onDone: "final",
+                                        // onError: ?,
                                     },
                                 },
-                                queuingComplete: {
-                                    type: "final",
-                                    invoke: {
-                                        src: async function (c: Context, e: any) {
-                                            console.log("queuingComplete state");
-                                        }
-                                    }
-                                },
+                                final: {type: "final"},
 
                             }
                         },
@@ -55,13 +46,11 @@ export function newUpdateMachine(context: Context) {
                                 upserting: {
                                     invoke: {
                                         src: "upsertAll",
-                                        onDone: "upsertingComplete",
+                                        onDone: "final",
                                         // onError: ?,
                                     },
                                 },
-                                upsertingComplete: {
-                                    type: "final",
-                                },
+                                final: {type: "final"},
                             },
                         },
                     },
