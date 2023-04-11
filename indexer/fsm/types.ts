@@ -1,10 +1,29 @@
-import {Commentable, Comment} from "../../lib/types";
 import {GraphQLClient} from "graphql-request";
+import {
+    Commentable,
+    Comment,
+    ResponseComment,
+    ResponseIssue,
+    ResponsePR,
+    ResponseCommentable, CommentsPage, CommentablesPage
+} from "../../lib/types/index.js";
 
+
+// TODO: move
+// interface CommentQueryArgs {
+//     after: string;
+//
+// }
+
+// TODO: consolidate w/ lib/types (?)
 export interface Context {
-    gqlClient: GraphQLClient;
+    ghClient: GraphQLClient;
+    pgClient: GraphQLClient;
     owner: string;
     name: string;
-    commentablesQueue: Commentable[];
-    commentsQueue: Comment[];
+    fetchCommentablesQueue: CommentablesPage[];
+    storeCommentablesQueue: Commentable[];
+    fetchCommentsQueue: CommentsPage[];
+    storeCommentsQueue: Comment[];
+    // commentsQueue: CommentQueryArgs[];
 };

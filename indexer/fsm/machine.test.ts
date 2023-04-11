@@ -6,16 +6,21 @@ import DoneCallback = jest.DoneCallback;
 
 jest.mock<GraphQLClient>('graphql-request');
 
-const gqlClient = new GraphQLClient("")
+const ghClient = new GraphQLClient("")
+const pgClient = new GraphQLClient("")
 // @ts-ignore
-gqlClient.request.mockResolvedValue()
+ghClient.request.mockResolvedValue()
+pgClient.request.mockResolvedValue()
 
 const mockContext: Context = {
-    gqlClient,
+    ghClient,
+    pgClient,
     owner: "owner",
     name: "name",
-    commentablesQueue: [],
-    commentsQueue: [],
+    storeCommentablesQueue: [],
+    storeCommentsQueue: [],
+    fetchCommentablesQueue: [],
+    fetchCommentsQueue: [],
 };
 
 const mockServices = {

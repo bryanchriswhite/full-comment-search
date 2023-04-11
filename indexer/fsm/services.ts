@@ -1,6 +1,11 @@
-import {Context} from "./types";
-import {addCommentsToDatabase} from "../store";
-import {fetchNext} from "../fetch";
+import {Context} from "./types.js";
+import {Comment, CommentsPage, ResponseComment} from "../../lib/types/index.js"
+import {addCommentsToDatabase} from "../store.js";
+import {fetchCommentsPage, fetchIssueComments} from "../fetch.js";
+import {issueCommentsQuery} from "../queries";
+
+// TODO: parameterize, move, & set default
+const queueTimeout = 1000;
 
 // TODO: remove
 export async function logUpdated(context: Context, event: any) {
@@ -18,7 +23,7 @@ export async function queueAll(context: Context, event: any) {
     ]);
 }
 
-export async function queueCommentables (context: Context, event: any) {
+export async function queueCommentables(context: Context, event: any) {
     // TODO:
     // - dequeue pendingCommentables
     // - query GitHub
@@ -28,25 +33,76 @@ export async function queueCommentables (context: Context, event: any) {
 
 export async function queueComments(context: Context, event: any) {
     // TODO:
-    // - dequeue pendingComments
     // - query GitHub
-    // - enqueue storeComments
+    // - enqueue comments
     console.log("queueComments called")
 
     const {
-        gqlClient,
+        ghClient,
+        pgClient,
         owner,
         name
     } = context;
 
-    const comments = await fetchNext(gqlClient, {
+    console.log("fetching...")
+    const {commentables, comments, next} = await fetchIssueComments(ghClient, {
         owner,
         name,
+        // TODO: parameterize max
         PRs: {max: 3, comments: {max: 100}},
+        // TODO: parameterize max
         issues: {max: 3, comments: {max: 100}},
-    })
+    });
+    console.log("done!");
 
-    console.log(comments)
+    // TODO: add issues to commentables queue
+    context.storeCommentablesQueue.push(...commentables)
+    context.storeCommentsQueue.push(...comments)
+
+    const nextCommentables = next.commentables;
+    const nextComments = next.comments;
+    if (typeof nextCommentables !== "undefined") {
+        context.fetchCommentablesQueue.push(nextCommentables)
+    }
+    if (typeof nextComments !== "undefined") {
+        context.fetchCommentsQueue.push(...nextComments)
+    }
+
+    // -- dequeue fetchCommentablesQueue
+    // TODO: refactor & recurse ...
+
+    // -- dequeue fetchCommentsQueue
+    // TODO: refactor (maybe with upsertComments)
+    let queueTimeoutId,
+        queueEmpty = false
+    ;
+
+    const resetTimeout = () => {
+        queueTimeoutId = setTimeout(() => {
+            queueEmpty = true
+        }, queueTimeout);
+    };
+
+    resetTimeout();
+    while (!queueEmpty) {
+        const maybeCommentsPage: CommentsPage | undefined = context.fetchCommentsQueue.shift()
+        if (typeof maybeCommentsPage === "undefined") {
+            continue;
+        }
+        resetTimeout()
+
+        // TODO: something more idiomatic
+        const nextCommentsPage = maybeCommentsPage as unknown as CommentsPage;
+
+        const {owner, name} = context;
+        // TODO: batch and parallelize
+        const x = fetchCommentsPage(ghClient, nextCommentsPage, {
+            owner,
+            name,
+        })
+    }
+
+    console.log(`queueComments done; comments: ${comments}`)
 }
 
 export async function upsertAll(context: Context, event: any) {
@@ -58,7 +114,7 @@ export async function upsertAll(context: Context, event: any) {
 
 export async function upsertCommentables(context: Context, event: any) {
     // TODO:
-    // - dequeue storeCommentables
+    // - dequeue commentables
     // - send postgraphile mutation
     // - return stats
     console.log("upsertCommentables called")
@@ -66,10 +122,34 @@ export async function upsertCommentables(context: Context, event: any) {
 
 export async function upsertComments(context: Context, event: any) {
     // TODO:
-    // - dequeue storeComments
+    // - dequeue comments
     // - send postgraphile mutation
     // - return stats
     console.log("upsertComments called")
 
-    // await addCommentsToDatabase(pgClient, comments);
+    let queueTimeoutId,
+        queueEmpty = false
+    ;
+
+    const resetTimeout = () => {
+        queueTimeoutId = setTimeout(() => {
+            queueEmpty = true
+        }, queueTimeout);
+    };
+
+    resetTimeout();
+    while (!queueEmpty) {
+        const maybeComment: Comment | undefined = context.storeCommentsQueue.shift()
+        if (typeof maybeComment === "undefined") {
+            continue;
+        }
+        resetTimeout()
+
+        // TODO: something more idomatic
+        const comment = maybeComment as unknown as Comment;
+        // TODO: batch and parallelize
+        await addCommentsToDatabase(context.pgClient, [comment]);
+    }
+
+    console.log("upsertComments done")
 }

@@ -1,12 +1,12 @@
+import {GraphQLClient} from "graphql-request";
 import {createMachine} from "xstate";
 import {
     queueAll,
     upsertAll,
     logError,
     logUpdated
-} from "./services";
-import {Context} from "./types";
-import {GraphQLClient} from "graphql-request";
+} from "./services.js";
+import {Context} from "./types.js";
 
 // TODO: decompose into multiple machines
 export function newUpdateMachine(context: Context) {
