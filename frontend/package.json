@@ -12,6 +12,8 @@
     "@types/react": "^18.0.31",
     "@types/react-dom": "^18.0.11",
     "cross-env": "^7.0.3",
+    "graphql": "^16.6.0",
+    "graphql-request": "^6.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-redux": "^8.0.5",
