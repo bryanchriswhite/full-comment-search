@@ -14,7 +14,7 @@ stateDiagram
     parallel_fork --> upserting
 
     state updating {
-        state q_queuing queuing {
+        state queuing {
             state "queuing" as q_start
             state "final" as q_done
             [*] --> q_start
