@@ -21,7 +21,7 @@ yarn up [service]
 
 ### Stopping service(s)
 ```
-yarn down [service]
+yarn stop [service]
 ```
 
 ## Database Migrations
