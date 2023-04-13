@@ -55,6 +55,7 @@ services:
       - "./:/app"
     depends_on:
       - postgres
+      - redis
     restart: on-failure
 
   # Use via `yarn migrate` (see: package.json scripts)
