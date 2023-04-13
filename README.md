@@ -28,6 +28,10 @@ yarn  down
 yarn stop <service>
 ```
 
+## Documentation
+
+See the [`./docs`](./docs) directory.
+
 ## Database Migrations
 
 Database migrations are facilitated by [graphile-migrate](https://github.com/graphile/migrate)
