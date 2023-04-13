@@ -9,11 +9,18 @@ npm i -g yarn
 # Install nodejs dependencies
 yarn install
 
-# Start the backend
-yarn up [service]
+# Start everything
+yarn up
 # (may need to restart after initial DB start)
+```
 
-# Stop the backend
+### Starting service(s)
+```
+yarn up [service]
+```
+
+### Stopping service(s)
+```
 yarn down [service]
 ```
 

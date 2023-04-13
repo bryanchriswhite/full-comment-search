@@ -55,6 +55,7 @@ services:
       - "./:/app"
     depends_on:
       - postgres
+      - redis
     restart: on-failure
 
   # Use via `yarn migrate` (see: package.json scripts)
@@ -92,6 +93,17 @@ services:
       - redis_data:/data
     ports:
       - "6379:6379"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    volumes:
+      - "./frontend:/app"
+    depends_on:
+      - postgraphile
 
 volumes:
   redis_data:
