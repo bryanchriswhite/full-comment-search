@@ -15,6 +15,15 @@ yarn up [service]
 
 # Stop the backend
 yarn down [service]
+
+# Setup the frontend
+cd ./frontend
+yarn install
+
+# Start the frontend
+yarn start
+
+## TODO: convert repo into a yarn workspace
 ```
 
 ## Database Migrations

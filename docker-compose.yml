@@ -94,6 +94,17 @@ services:
     ports:
       - "6379:6379"
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    volumes:
+      - "./frontend:/app"
+    depends_on:
+      - postgraphile
+
 volumes:
   redis_data:
   postgres_data:
