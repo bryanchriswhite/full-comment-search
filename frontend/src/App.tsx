@@ -6,7 +6,7 @@ import {Comment} from "./search/types.ts"
 
 function App() {
     const [searchQuery, setSearchQuery] = useState('');
-    const [selectedCommentUrl, setSelectedCommentUrl] = useState('');
+    // const [selectedCommentUrl, setSelectedCommentUrl] = useState('');
     const dispatch = useDispatch();
     const searchResults = useSelector((state: any) => state.search.searchResults);
 
@@ -40,7 +40,7 @@ function App() {
                 </div>
             </div>
             <div className="right-column">
-                {selectedCommentUrl && <iframe src={selectedCommentUrl} style={{width: '100%', height: '100%'}}/>}
+                {/*{selectedCommentUrl && <iframe src={selectedCommentUrl} style={{width: '100%', height: '100%'}}/>}*/}
             </div>
         </div>
     );

@@ -1,4 +1,3 @@
-import {Comment} from '../search/types.ts';
 import {GraphQLClient} from "graphql-request";
 import {gql} from "graphql-request";
 
