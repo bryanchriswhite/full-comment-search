@@ -1,155 +1,126 @@
+import Queue from "bull";
+
 import {Context} from "./types.js";
-import {Comment, CommentsPage, ResponseComment} from "../../lib/types/index.js"
+import {Comment, CommentsPage, Commentable, CommentablesPage} from "../../lib/types/index.js";
 import {addCommentsToDatabase} from "../store.js";
-import {fetchCommentsPage, fetchIssueComments} from "../fetch.js";
-import {issueCommentsQuery} from "../queries";
+import {fetchIssueComments, fetchCommentsPage} from "../fetch.js";
 
-// TODO: parameterize, move, & set default
 const queueTimeout = 1000;
-
-// TODO: remove
+const commentablesPageSize = 3;
+const commentsPageSize = 100;
 export async function logUpdated(context: Context, event: any) {
     console.log("updated state!");
 }
 
 export async function logError(context: Context, event: any) {
+    console.log("error occurred:", event);
     // TODO:
 }
 
 export async function queueAll(context: Context, event: any) {
-    await Promise.all([
-        queueCommentables(context, event),
-        queueComments(context, event),
-    ]);
-}
+    console.log("queueAll started");
 
-export async function queueCommentables(context: Context, event: any) {
-    // TODO:
-    // - dequeue pendingCommentables
-    // - query GitHub
-    // - enqueue storeComments
-    console.log("queueCommentables called")
-}
-
-export async function queueComments(context: Context, event: any) {
-    // TODO:
-    // - query GitHub
-    // - enqueue comments
-    console.log("queueComments called")
-
-    const {
-        ghClient,
-        pgClient,
-        owner,
-        name
-    } = context;
-
-    console.log("fetching...")
+    const {ghClient, pgClient, owner, name} = context;
     const {commentables, comments, next} = await fetchIssueComments(ghClient, {
         owner,
         name,
-        // TODO: parameterize max
-        PRs: {max: 3, comments: {max: 100}},
-        // TODO: parameterize max
-        issues: {max: 3, comments: {max: 100}},
+        PRs: {max: commentablesPageSize, comments: {max: commentsPageSize}},
+        issues: {max: commentablesPageSize, comments: {max: commentsPageSize}},
     });
-    console.log("done!");
 
-    // TODO: add issues to commentables queue
-    context.storeCommentablesQueue.push(...commentables)
-    context.storeCommentsQueue.push(...comments)
+    const pendingCommentablesQueue = new Queue("pendingCommentables");
+    const pendingCommentsQueue = new Queue("pendingComments");
+    const nextCommentablesQueue = new Queue("nextCommentables");
+    const nextCommentsQueue = new Queue("nextComments");
 
-    const nextCommentables = next.commentables;
-    const nextComments = next.comments;
-    if (typeof nextCommentables !== "undefined") {
-        context.fetchCommentablesQueue.push(nextCommentables)
+    // Enqueue normalized commentables and comments
+    console.log("enqueuing commentables and comments");
+    commentables.forEach((commentable: Commentable) =>
+        pendingCommentablesQueue.add("enqueue", {commentable})
+    );
+    comments.forEach((comment: Comment) =>
+        pendingCommentsQueue.add("enqueue", {comment})
+    );
+
+    // Enqueue CommentablePage and CommentPage objects for the next pages
+    console.log("enqueuing next pages");
+    if (next.commentables) {
+        nextCommentablesQueue.add("enqueue", {nextPage: next.commentables});
     }
-    if (typeof nextComments !== "undefined") {
-        context.fetchCommentsQueue.push(...nextComments)
+    if (next.comments) {
+        next.comments.forEach((commentPage: CommentsPage) =>
+            nextCommentsQueue.add("enqueue", {commentPage})
+        );
     }
 
-    // -- dequeue fetchCommentablesQueue
-    // TODO: refactor & recurse ...
+    // Process pendingCommentables queue
+    pendingCommentablesQueue.process(async (job) => {
+        console.log("processing pendingCommentables queue");
+        const {commentable} = job.data;
+        // TODO: Mutate commentables using Postgraphile
+    });
 
-    // -- dequeue fetchCommentsQueue
-    // TODO: refactor (maybe with upsertComments)
-    let queueTimeoutId,
-        queueEmpty = false
-    ;
+    // Process pendingComments queue
+    pendingCommentsQueue.process(async (job) => {
+        console.log("processing pendingComments queue");
+        const {comment} = job.data;
+        await addCommentsToDatabase(context.pgClient, [comment]);
+    });
 
-    const resetTimeout = () => {
-        queueTimeoutId = setTimeout(() => {
-            queueEmpty = true
-        }, queueTimeout);
-    };
-
-    resetTimeout();
-    while (!queueEmpty) {
-        const maybeCommentsPage: CommentsPage | undefined = context.fetchCommentsQueue.shift()
-        if (typeof maybeCommentsPage === "undefined") {
-            continue;
-        }
-        resetTimeout()
-
-        // TODO: something more idiomatic
-        const nextCommentsPage = maybeCommentsPage as unknown as CommentsPage;
-
-        const {owner, name} = context;
-        // TODO: batch and parallelize
-        const x = fetchCommentsPage(ghClient, nextCommentsPage, {
+    // Process nextCommentables queue
+    nextCommentablesQueue.process(async (job) => {
+        console.log("processing nextCommentables queue");
+        const {nextPage} = job.data;
+        const {commentables: nextCommentables, comments: nextComments} = await fetchIssueComments(ghClient, {
             owner,
             name,
-        })
-    }
+            PRs: {max: commentablesPageSize, comments: {max: commentsPageSize}},
+            issues: {max: commentablesPageSize, comments: {max: commentsPageSize}},
+            ...nextPage,
+        });
 
-    console.log(`queueComments done; comments: ${comments}`)
+        nextCommentables.forEach((commentable: Commentable) =>
+            pendingCommentablesQueue.add("enqueue", {commentable})
+        );
+        nextComments.forEach((comment: Comment) =>
+            pendingCommentsQueue.add("enqueue", {comment})
+        );
+    });
+
+    // Process nextComments queue
+    nextCommentsQueue.process(async (job) => {
+        console.log("processing nextComments queue");
+        const {commentPage} = job.data;
+        const fetchedComments = await fetchCommentsPage(ghClient, commentPage, {
+            owner,
+            name,
+            PRs: {max: commentablesPageSize, comments: {max: commentsPageSize}},
+            issues: {max: commentablesPageSize, comments: {max: commentsPageSize}},
+        });
+
+        fetchedComments.forEach((comment: Comment) =>
+            pendingCommentsQueue.add("enqueue", {comment})
+        );
+    });
 }
 
 export async function upsertAll(context: Context, event: any) {
-    await Promise.all([
-        upsertCommentables(context, event),
-        upsertComments(context, event),
-    ]);
-}
+    console.log("upsertAll started");
 
-export async function upsertCommentables(context: Context, event: any) {
-    // TODO:
-    // - dequeue commentables
-    // - send postgraphile mutation
-    // - return stats
-    console.log("upsertCommentables called")
-}
+    const pendingCommentablesQueue = new Queue("pendingCommentables");
+    const pendingCommentsQueue = new Queue("pendingComments");
 
-export async function upsertComments(context: Context, event: any) {
-    // TODO:
-    // - dequeue comments
-    // - send postgraphile mutation
-    // - return stats
-    console.log("upsertComments called")
+    // Process pendingCommentables queue
+    pendingCommentablesQueue.process(async (job) => {
+        console.log("processing pendingCommentables queue in upsertAll");
+        const {commentable} = job.data;
+        // TODO: Mutate commentables using Postgraphile
+    });
 
-    let queueTimeoutId,
-        queueEmpty = false
-    ;
-
-    const resetTimeout = () => {
-        queueTimeoutId = setTimeout(() => {
-            queueEmpty = true
-        }, queueTimeout);
-    };
-
-    resetTimeout();
-    while (!queueEmpty) {
-        const maybeComment: Comment | undefined = context.storeCommentsQueue.shift()
-        if (typeof maybeComment === "undefined") {
-            continue;
-        }
-        resetTimeout()
-
-        // TODO: something more idomatic
-        const comment = maybeComment as unknown as Comment;
-        // TODO: batch and parallelize
+    // Process pendingComments queue
+    pendingCommentsQueue.process(async (job) => {
+        console.log("processing pendingComments queue in upsertAll");
+        const {comment} = job.data;
         await addCommentsToDatabase(context.pgClient, [comment]);
-    }
-
-    console.log("upsertComments done")
+    });
 }

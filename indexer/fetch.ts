@@ -68,6 +68,7 @@ export async function fetchIssueComments(client: GraphQLClient, {
     name,
     issues
 }: nextQueryArgs): Promise<FetchResult> {
+    console.log("fetchIssueComments")
     const issuesResponse: IssueCommentsResponse = await client.request(issueCommentsQuery, {
         owner,
         name,
@@ -78,6 +79,7 @@ export async function fetchIssueComments(client: GraphQLClient, {
         afterComment: issues?.comments.after,
     })
 
+    console.log("got issue comments resopnse")
     const {nodes: responseIssues, pageInfo: {hasNextPage, endCursor}} = issuesResponse.repository.issues
     // check if there's another page of issues
     let nextIssuePage: CommentablesPage | undefined;
@@ -110,7 +112,7 @@ export async function fetchIssueComments(client: GraphQLClient, {
         } as CommentsPage;
     })
 
-    return Promise.resolve({
+    return {
         // TODO: normalize issues (drop unused properties)
         commentables: normalizedIssues,
         // sort issueComments by createdAt in descending order (i.e. newest first)
@@ -119,7 +121,7 @@ export async function fetchIssueComments(client: GraphQLClient, {
             commentables: nextIssuePage,
             comments: pendingCommentsPages,
         },
-    })
+    };
 }
 
 export async function fetchCommentsPage(client: GraphQLClient, page: CommentsPage, {
