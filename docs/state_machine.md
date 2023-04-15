@@ -10,22 +10,22 @@ stateDiagram
     state parallel_join <<join>>
 
     outdated --> parallel_fork : UPDATE
-    parallel_fork --> queuing
-    parallel_fork --> upserting
+    parallel_fork --> fetching
+    parallel_fork --> storing
 
     state updating {
-        state queuing {
-            state "queuing" as q_start
-            state "final" as q_done
+        state fetching {
+            state "start" as q_start
+            state "done" as q_done
             [*] --> q_start
             q_start --> q_done : onDone
             q_done --> [*]
         }
         --
 
-        state upserting {
-            state "upserting" as u_start
-            state "final" as u_done
+        state storing {
+            state "start" as u_start
+            state "done" as u_done
             
             [*] --> u_start
             u_start --> u_done : onDone
@@ -33,8 +33,8 @@ stateDiagram
         }
     }
 
-    queuing --> parallel_join
-    upserting --> parallel_join
+    fetching --> parallel_join
+    storing --> parallel_join
 
     parallel_join --> updated: onDone
     updated --> [*]

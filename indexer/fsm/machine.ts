@@ -26,31 +26,31 @@ export function newUpdateMachine(context: Context) {
                     type: "parallel",
                     onDone: "updated",
                     states: {
-                        queuing: {
-                            initial: 'queuing',
+                        fetching: {
+                            initial: 'start',
                             states: {
-                                queuing: {
+                                start: {
                                     invoke: {
                                         src: "queueAll",
-                                        onDone: "final",
+                                        onDone: "done",
                                         // onError: ?,
                                     },
                                 },
-                                final: {type: "final"},
+                                done: {type: "final"},
 
                             }
                         },
-                        upserting: {
-                            initial: 'upserting',
+                        storing: {
+                            initial: 'start',
                             states: {
-                                upserting: {
+                                start: {
                                     invoke: {
                                         src: "upsertAll",
-                                        onDone: "final",
+                                        onDone: "done",
                                         // onError: ?,
                                     },
                                 },
-                                final: {type: "final"},
+                                done: {type: "final"},
                             },
                         },
                     },
