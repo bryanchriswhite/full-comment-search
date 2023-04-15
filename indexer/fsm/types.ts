@@ -1,29 +1,43 @@
+import {Queue} from "bull";
 import {GraphQLClient} from "graphql-request";
-import {
-    Commentable,
-    Comment,
-    ResponseComment,
-    ResponseIssue,
-    ResponsePR,
-    ResponseCommentable, CommentsPage, CommentablesPage
-} from "../../lib/types/index.js";
-
-
-// TODO: move
-// interface CommentQueryArgs {
-//     after: string;
-//
-// }
 
 // TODO: consolidate w/ lib/types (?)
 export interface Context {
-    ghClient: GraphQLClient;
-    pgClient: GraphQLClient;
-    owner: string;
-    name: string;
-    fetchCommentablesQueue: CommentablesPage[];
-    storeCommentablesQueue: Commentable[];
-    fetchCommentsQueue: CommentsPage[];
-    storeCommentsQueue: Comment[];
-    // commentsQueue: CommentQueryArgs[];
-};
+    clients: {
+        github: GraphQLClient,
+        postgraphile: GraphQLClient,
+    }
+    queryVars: {
+        owner: string;
+        name: string;
+        pageSize: {
+            commentables: number,
+            comments: number,
+        }
+    }
+    queues: {
+        fetching: {
+            commentables: Queue,
+            comments: Queue,
+        },
+        storing: {
+            commentables: Queue,
+            comments: Queue,
+        }
+    }
+    processes: {
+        fetching: {
+            commentables: ProcessConfig,
+            comments: ProcessConfig,
+        },
+        storing: {
+            commentables: ProcessConfig,
+            comments: ProcessConfig,
+        }
+    }
+}
+
+export interface ProcessConfig {
+    concurrency: number;
+    scriptPath: string;
+}

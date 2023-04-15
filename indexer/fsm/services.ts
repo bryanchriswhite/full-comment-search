@@ -1,126 +1,76 @@
 import Queue from "bull";
 
 import {Context} from "./types.js";
-import {Comment, CommentsPage, Commentable, CommentablesPage} from "../../lib/types/index.js";
-import {addCommentsToDatabase} from "../store.js";
-import {fetchIssueComments, fetchCommentsPage} from "../fetch.js";
+import {Comment, CommentsPage, Commentable} from "../../lib/types/index.js";
+import {fetchIssueComments} from "../fetch.js";
 
-const queueTimeout = 1000;
-const commentablesPageSize = 3;
-const commentsPageSize = 100;
-export async function logUpdated(context: Context, event: any) {
+export async function logUpdated(ctx: Context, event: any) {
     console.log("updated state!");
 }
 
-export async function logError(context: Context, event: any) {
-    console.log("error occurred:", event);
+export async function logError(ctx: Context, event: any) {
     // TODO:
 }
 
-export async function queueAll(context: Context, event: any) {
-    console.log("queueAll started");
-
-    const {ghClient, pgClient, owner, name} = context;
-    const {commentables, comments, next} = await fetchIssueComments(ghClient, {
-        owner,
-        name,
-        PRs: {max: commentablesPageSize, comments: {max: commentsPageSize}},
-        issues: {max: commentablesPageSize, comments: {max: commentsPageSize}},
+export async function queueAll(ctx: Context, event: any) {
+    const {queryVars: {owner, name, pageSize}} = ctx;
+    const {commentables, comments, next} = await fetchIssueComments(ctx.clients.github, {
+        owner, name,
+        PRs: {
+            max: pageSize.commentables,
+            comments: {max: pageSize.comments}
+        },
+        issues: {
+            max: pageSize.commentables,
+            comments: {max: pageSize.comments}
+        },
     });
 
-    const pendingCommentablesQueue = new Queue("pendingCommentables");
-    const pendingCommentsQueue = new Queue("pendingComments");
-    const nextCommentablesQueue = new Queue("nextCommentables");
-    const nextCommentsQueue = new Queue("nextComments");
-
+    const {queues} = ctx;
     // Enqueue normalized commentables and comments
-    console.log("enqueuing commentables and comments");
     commentables.forEach((commentable: Commentable) =>
-        pendingCommentablesQueue.add("enqueue", {commentable})
+        queues.storing.commentables.add("enqueue", {commentable})
     );
     comments.forEach((comment: Comment) =>
-        pendingCommentsQueue.add("enqueue", {comment})
+        queues.storing.comments.add("enqueue", {comment})
     );
 
     // Enqueue CommentablePage and CommentPage objects for the next pages
-    console.log("enqueuing next pages");
     if (next.commentables) {
-        nextCommentablesQueue.add("enqueue", {nextPage: next.commentables});
+        queues.fetching.commentables.add("enqueue", {nextPage: next.commentables});
     }
     if (next.comments) {
         next.comments.forEach((commentPage: CommentsPage) =>
-            nextCommentsQueue.add("enqueue", {commentPage})
+            queues.fetching.comments.add("enqueue", {commentPage})
         );
     }
 
-    // Process pendingCommentables queue
-    pendingCommentablesQueue.process(async (job) => {
-        console.log("processing pendingCommentables queue");
-        const {commentable} = job.data;
-        // TODO: Mutate commentables using Postgraphile
-    });
-
-    // Process pendingComments queue
-    pendingCommentsQueue.process(async (job) => {
-        console.log("processing pendingComments queue");
-        const {comment} = job.data;
-        await addCommentsToDatabase(context.pgClient, [comment]);
-    });
-
     // Process nextCommentables queue
-    nextCommentablesQueue.process(async (job) => {
-        console.log("processing nextCommentables queue");
-        const {nextPage} = job.data;
-        const {commentables: nextCommentables, comments: nextComments} = await fetchIssueComments(ghClient, {
-            owner,
-            name,
-            PRs: {max: commentablesPageSize, comments: {max: commentsPageSize}},
-            issues: {max: commentablesPageSize, comments: {max: commentsPageSize}},
-            ...nextPage,
-        });
-
-        nextCommentables.forEach((commentable: Commentable) =>
-            pendingCommentablesQueue.add("enqueue", {commentable})
-        );
-        nextComments.forEach((comment: Comment) =>
-            pendingCommentsQueue.add("enqueue", {comment})
-        );
-    });
+    const {storing, fetching} = ctx.processes;
+    queues.fetching.commentables.process(
+        fetching.commentables.concurrency,
+        fetching.commentables.scriptPath,
+    );
 
     // Process nextComments queue
-    nextCommentsQueue.process(async (job) => {
-        console.log("processing nextComments queue");
-        const {commentPage} = job.data;
-        const fetchedComments = await fetchCommentsPage(ghClient, commentPage, {
-            owner,
-            name,
-            PRs: {max: commentablesPageSize, comments: {max: commentsPageSize}},
-            issues: {max: commentablesPageSize, comments: {max: commentsPageSize}},
-        });
-
-        fetchedComments.forEach((comment: Comment) =>
-            pendingCommentsQueue.add("enqueue", {comment})
-        );
-    });
+    queues.fetching.comments.process(
+        fetching.comments.concurrency,
+        fetching.comments.scriptPath,
+    );
 }
 
-export async function upsertAll(context: Context, event: any) {
-    console.log("upsertAll started");
+export async function upsertAll(ctx: Context, event: any) {
+    const {commentables, comments} = ctx.processes.storing;
 
-    const pendingCommentablesQueue = new Queue("pendingCommentables");
-    const pendingCommentsQueue = new Queue("pendingComments");
+    // Process storing commentables queue
+    ctx.queues.storing.commentables.process(
+        commentables.concurrency,
+        commentables.scriptPath
+    );
 
-    // Process pendingCommentables queue
-    pendingCommentablesQueue.process(async (job) => {
-        console.log("processing pendingCommentables queue in upsertAll");
-        const {commentable} = job.data;
-        // TODO: Mutate commentables using Postgraphile
-    });
-
-    // Process pendingComments queue
-    pendingCommentsQueue.process(async (job) => {
-        console.log("processing pendingComments queue in upsertAll");
-        const {comment} = job.data;
-        await addCommentsToDatabase(context.pgClient, [comment]);
-    });
+    // Process storing comments queue
+    ctx.queues.storing.comments.process(
+        comments.concurrency,
+        comments.scriptPath,
+    );
 }
