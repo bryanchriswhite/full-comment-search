@@ -5,8 +5,9 @@ import {
     upsertAll,
     logError,
     logUpdated
-} from "./services.js";
-import {Context} from "./types.js";
+} from "./services.ts";
+
+import {Context} from "../../lib/types/indexer";
 
 // TODO: decompose into multiple machines
 export function newUpdateMachine(context: Context) {

@@ -1,3 +1,3 @@
-export * from "./response.js"
-export * from "./query.js"
-export * from "./comment.js"
+export * from "./response.ts"
+export * from "./query.ts"
+export * from "./comment.ts"

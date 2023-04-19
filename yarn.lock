@@ -990,6 +990,11 @@ bull@^4.10.4:
     semver "^7.3.2"
     uuid "^8.3.0"
 
+bun-types@^0.5.8:
+  version "0.5.8"
+  resolved "https://registry.yarnpkg.com/bun-types/-/bun-types-0.5.8.tgz#953722062116e0b87ce00e4e4cc807673926b834"
+  integrity sha512-VHwD0MAHo3wraYAeqTWH2NDmXOdGfC3wWWOnZvK93ytI6yq/LkgsCjDudWNmN7MlfPvJb2zoLMnkzhjxNwLsLw==
+
 bytes@3.1.2:
   version "3.1.2"
   resolved "https://registry.yarnpkg.com/bytes/-/bytes-3.1.2.tgz#8b0beeb98605adf1b128fa4386403c009e0221a5"

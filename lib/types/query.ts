@@ -1,19 +1,18 @@
 
 export interface paginatedQueryArgs {
-    max: number,
     after?: string,
     before?: string,
 }
 
-export interface commentsQueryArgs extends paginatedQueryArgs {
-    comments: paginatedQueryArgs
-}
-
-// TODO: refactor
-export interface nextQueryArgs {
-    owner: string,
-    // TODO: rename to `repo` (?)
-    name: string,
-    PRs?: commentsQueryArgs,
-    issues?: commentsQueryArgs,
+export interface QueryVars {
+    owner: string;
+    name: string;
+    pageSize: {
+        commentables: number;
+        comments: number;
+    }
+    pageVars?: {
+        commentables?: paginatedQueryArgs;
+        comments?: paginatedQueryArgs;
+    };
 }

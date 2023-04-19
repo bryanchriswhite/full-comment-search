@@ -1,8 +1,8 @@
 import {interpret} from "xstate";
 import newUpdateMachine from "./machine";
-import {Context} from "./types";
 import {GraphQLClient} from "graphql-request";
 import DoneCallback = jest.DoneCallback;
+import {Context} from "../../lib/types/indexer";
 
 jest.mock<GraphQLClient>('graphql-request');
 

@@ -48,7 +48,7 @@ services:
       - .env
     environment:
       <<: *psql-env
-      <<: *redis-env
+#      <<: *redis-env
 #      NODE_ENV:
 #    command: "yarn index && sleep 500"
     volumes:

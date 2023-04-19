@@ -1,9 +1,7 @@
-import Queue from "bull";
-import {GraphQLClient} from 'graphql-request';
 import {interpret} from "xstate";
-import {newUpdateMachine} from "./fsm/machine.js";
-import {Context} from "./fsm/types.js";
-import {Comment, Commentable, CommentablesPage, CommentsPage} from "../lib/types/index.js";
+import {newUpdateMachine} from "./fsm/machine.ts";
+
+import {Context} from "../lib/types/indexer";
 
 // TODO: check `NODE_ENV`
 const defaults = {
@@ -26,39 +24,27 @@ const commentablesPageSize = 3;
 const commentsPageSize = 100;
 
 // TODO: parameterize (?)
-const storingCommentablesProcessPath = "./proceses/storing_commentables.js",
-    storingCommentsProcessPath = "./processes/storing_comments.js",
-    fetchCommentablesProcessPath = "./proceses/fetch_commentables.js",
-    fetchCommentsProcessPath = "./processes/fetch_comments.js",
+// TODO: fix paths; weird relativeness; OS-agnostic
+const storingCommentablesProcessPath = `${__dirname}/queue/processes/storing_commentables.ts`,
+    storingCommentsProcessPath = `${__dirname}/queue/processes/storing_comments.ts`,
+    fetchCommentablesProcessPath = `${__dirname}/queue/processes/fetching_commentables.ts`,
+    fetchCommentsProcessPath = `${__dirname}/queue/processes/fetching_comments.ts`,
     storingConcurrency = 2,
     fetchingConcurrency = 2
 ;
 
 const [owner, name] = ghRepo.split("/")
 
-
-// github graphql client
-const ghClient = new GraphQLClient(GITHUB_GRAPHQL_URL, {
-    headers: {
-        Authorization: `Bearer ${ghAccessToken}`,
-    },
-});
-
-// TODO: add authentication
-// postgraphile graphql client
-const pgClient = new GraphQLClient(POSTGRAPHILE_URL);
-
-// TODO: replace with `Bull` queues
-const storingCommentablesQueue = new Queue("pendingCommentables");
-const storingCommentsQueue = new Queue("pendingComments");
-const fetchingCommentablesQueue = new Queue("nextCommentables");
-const fetchingCommentsQueue = new Queue("nextComments");
-
 async function run() {
     const context: Context = {
-        clients: {
-            github: ghClient,
-            postgraphile: pgClient,
+        clientConfigs: {
+            github: {
+                endpointURL: GITHUB_GRAPHQL_URL,
+                classicAccessToken: ghAccessToken,
+            },
+            postgraphile: {
+                endpointURL: POSTGRAPHILE_URL,
+            },
         },
         queryVars: {
             owner, name,
@@ -69,12 +55,12 @@ async function run() {
         },
         queues: {
             fetching: {
-                commentables: fetchingCommentablesQueue,
-                comments: fetchingCommentsQueue,
+                commentables: "nextCommentables",
+                comments: "nextComments",
             },
             storing: {
-                commentables: storingCommentablesQueue,
-                comments: storingCommentsQueue,
+                commentables: "pendingCommentables",
+                comments: "pendingComments",
             },
         },
         processes: {

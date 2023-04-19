@@ -1,9 +1,5 @@
-import Queue from "bull";
-import {processNextCommentablesFactory} from "../handlers";
-import {Context} from "../../fsm/types";
-
-async function run(ctx: Context): Promise<void> {
-    processNextCommentablesFactory(ctx)
+export default function(job) {
+    console.log("processing pendingComments queue");
+    const {comment} = job.data;
+    await addCommentsToDatabase(context.pgClient, [comment]);
 }
-
-export default run;
