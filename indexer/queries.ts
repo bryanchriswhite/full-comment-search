@@ -12,7 +12,7 @@ export const pullRequestCommentsQuery = gql`
         $beforeComment: String
     ) {
         repository(owner: $owner, name: $name) {
-            pullRequests(first: $maxPRs, after: $afterPR, before: $beforePR) {
+            pullRequests(first: $maxPRs, after: $afterPR, before: $beforePR, orderBy: DESC) {
                 pageInfo {
                     hasNextPage
                     endCursor
@@ -20,7 +20,7 @@ export const pullRequestCommentsQuery = gql`
                 nodes {
                     createdAt
                     updatedAt
-                    comments(first: $maxComments, after: $afterComment, before: $beforeComment) {
+                    comments(first: $maxComments, after: $afterComment, before: $beforeComment, orderBy: DESC) {
                         pageInfo {
                             hasNextPage
                             endCursor
@@ -54,7 +54,7 @@ export const issueCommentsQuery = gql`
         $beforeComment: String
     ) {
         repository(owner: $owner, name: $name) {
-            issues(first: $maxIssues, after: $afterIssue, before: $beforeIssue) {
+            issues(first: $maxIssues, after: $afterIssue, before: $beforeIssue, orderBy: DESC) {
                 pageInfo {
                     hasNextPage
                     endCursor
@@ -62,7 +62,7 @@ export const issueCommentsQuery = gql`
                 nodes {
                     createdAt
                     updatedAt
-                    comments(first: $maxComments, after: $afterComment, before: $beforeComment) {
+                    comments(first: $maxComments, after: $afterComment, before: $beforeComment, orderBy: DESC) {
                         pageInfo {
                             hasNextPage
                             endCursor

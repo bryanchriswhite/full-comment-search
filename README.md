@@ -3,29 +3,29 @@
 ## Getting Started
 
 ```
-# Install `yarn` globally
-npm i -g yarn
+# Install `bun` globally
+npm i -g bun
 
-# Install nodejs dependencies
-yarn install
+# Install bun dependencies
+bun install
 
 # Start everything
-yarn up
+bun up
 # (may need to restart after initial DB start)
 ```
 
 ### Starting service(s)
 ```
-yarn up [service]
+bun up [service]
 ```
 
 ### Stopping service(s)
 ```
 # Stop everything
-yarn  down
+bun  down
 
 # OR a specific service
-yarn stop <service>
+bun stop <service>
 ```
 
 ## Documentation
@@ -37,7 +37,7 @@ See the [`./docs`](./docs) directory.
 Database migrations are facilitated by [graphile-migrate](https://github.com/graphile/migrate)
 
 ```
-yarn migrate <command>
+bun migrate <command>
 ```
 (see: [`graphile-migrate` CLI usage](https://github.com/graphile/migrate#graphile-migrate-1))
 

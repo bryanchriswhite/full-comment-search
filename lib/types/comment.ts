@@ -24,11 +24,11 @@ export interface Commentable {
 
 export interface CommentsPage {
     commentableType: CommentableType;
-    commentableId: string;
-    afterComment: string;
+    commentableId?: string;
+    afterComment?: string;
 }
 
 export interface CommentablesPage {
     commentableType: CommentableType;
-    after: string;
+    after?: string;
 }

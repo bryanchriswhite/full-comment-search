@@ -1,6 +1,6 @@
 import {GraphQLClient} from 'graphql-request';
-import {Comment} from "../lib/types/index.js";
-import {createCommentsMutation} from "./mutations.js";
+import {Comment} from "../lib/types/index.ts";
+import {createCommentsMutation} from "./mutations.ts";
 
 // TODO: move (?)
 interface CreateCommentPayload {

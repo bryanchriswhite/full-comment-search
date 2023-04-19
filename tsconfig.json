@@ -8,6 +8,7 @@
     "esModuleInterop": true,
     "sourceMap": true,
     "baseUrl": ".",
+    "types": ["bun-types"],
     "paths": {
       "*": ["*", "*.js"]
     }

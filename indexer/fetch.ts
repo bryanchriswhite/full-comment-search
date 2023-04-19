@@ -1,5 +1,5 @@
 import {GraphQLClient} from "graphql-request";
-import {issueCommentsQuery} from "./queries.js";
+import {issueCommentsQuery} from "./queries.ts";
 import {
     Comment,
     Commentable,
@@ -7,10 +7,10 @@ import {
     CommentableType,
     CommentsPage,
     IssueCommentsResponse,
-    nextQueryArgs,
+    QueryVars,
     ResponseComment,
     ResponseIssue
-} from "../lib/types/index.js";
+} from "../lib/types/index.ts";
 import {FetchResult} from "../lib/types/fetch";
 
 // TODO: move
@@ -63,21 +63,22 @@ function byCreatedAt(a: Timestamped, b: Timestamped) {
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
 }
 
-export async function fetchIssueComments(client: GraphQLClient, {
-    owner,
-    name,
-    issues
-}: nextQueryArgs): Promise<FetchResult> {
+export async function fetchIssueComments(client: GraphQLClient, queryVars: QueryVars): Promise<FetchResult> {
+    console.log("fetchIssueComments")
+
+    const {owner, name, pageSize} = queryVars;
+    const pageVars = queryVars.pageVars ?? {};
     const issuesResponse: IssueCommentsResponse = await client.request(issueCommentsQuery, {
         owner,
         name,
-        maxIssues: issues?.max,
-        maxComments: issues?.comments.max,
-        afterIssue: issues?.comments.after,
-        beforeIssue: issues?.comments.before,
-        afterComment: issues?.comments.after,
-    })
+        maxIssues: pageSize.commentables,
+        maxComments: pageSize.comments,
+        afterIssue: pageVars?.commentables?.after,
+        beforeIssue: pageVars?.commentables?.before,
+        afterComment: pageVars?.comments?.after,
+    });
 
+    console.log("got issue comments resopnse")
     const {nodes: responseIssues, pageInfo: {hasNextPage, endCursor}} = issuesResponse.repository.issues
     // check if there's another page of issues
     let nextIssuePage: CommentablesPage | undefined;
@@ -88,18 +89,24 @@ export async function fetchIssueComments(client: GraphQLClient, {
         };
     }
 
+    // collect & normalize all issues
     const normalizedIssues: Commentable[] = responseIssues.map(issue => ({
         id: issue.id,
         type: CommentableType.ISSUE,
     }));
 
-    const [issuesWithoutNext, issuesWithNext] = partition(responseIssues, hasMoreComments)
-    // TODO: refactor - separate normalized issues from normalized comments...
-    const normalizedIssueComments = issuesWithoutNext.flatMap((issue: ResponseIssue) => issue.comments.nodes)
-        .map(normalizeResponseComment)
+    // collect & normalize `Comment`s from issues w/o more comments
+    const normalizedIssueComments = responseIssues
+        .flatMap((issue: ResponseIssue) => issue.comments.nodes)
+        .map(normalizeResponseComment);
 
+    // partition issues into w/ and w/o more comments
+    // TODO: refactor
+    const [_, issuesWithMoreComments] = partition(responseIssues, hasMoreComments);
+
+    // create `CommentsPage`s from issues w/ more comments
     // TODO: refactor (normalize)
-    const pendingCommentsPages = issuesWithNext.map(issue => {
+    const nextCommentsPages = issuesWithMoreComments.map(issue => {
         const {
             pageInfo: {endCursor}
         } = issue.comments;
@@ -108,18 +115,17 @@ export async function fetchIssueComments(client: GraphQLClient, {
             commentableId: issue.id,
             afterComment: endCursor,
         } as CommentsPage;
-    })
+    });
 
-    return Promise.resolve({
-        // TODO: normalize issues (drop unused properties)
+    return {
         commentables: normalizedIssues,
         // sort issueComments by createdAt in descending order (i.e. newest first)
         comments: normalizedIssueComments.sort(byCreatedAt),
         next: {
             commentables: nextIssuePage,
-            comments: pendingCommentsPages,
+            comments: nextCommentsPages,
         },
-    })
+    };
 }
 
 export async function fetchCommentsPage(client: GraphQLClient, page: CommentsPage, {
@@ -127,7 +133,7 @@ export async function fetchCommentsPage(client: GraphQLClient, page: CommentsPag
     name,
     PRs,
     issues,
-}: nextQueryArgs): Promise<Comment[]> {
+}: QueryVars): Promise<Comment[]> {
     const {commentableId, afterComment} = page;
 
     // issues: {

@@ -5,8 +5,9 @@ import {
     upsertAll,
     logError,
     logUpdated
-} from "./services.js";
-import {Context} from "./types.js";
+} from "./services.ts";
+
+import {Context} from "../../lib/types/indexer";
 
 // TODO: decompose into multiple machines
 export function newUpdateMachine(context: Context) {
@@ -26,31 +27,31 @@ export function newUpdateMachine(context: Context) {
                     type: "parallel",
                     onDone: "updated",
                     states: {
-                        queuing: {
-                            initial: 'queuing',
+                        fetching: {
+                            initial: 'start',
                             states: {
-                                queuing: {
+                                start: {
                                     invoke: {
                                         src: "queueAll",
-                                        onDone: "final",
+                                        onDone: "done",
                                         // onError: ?,
                                     },
                                 },
-                                final: {type: "final"},
+                                done: {type: "final"},
 
                             }
                         },
-                        upserting: {
-                            initial: 'upserting',
+                        storing: {
+                            initial: 'start',
                             states: {
-                                upserting: {
+                                start: {
                                     invoke: {
                                         src: "upsertAll",
-                                        onDone: "final",
+                                        onDone: "done",
                                         // onError: ?,
                                     },
                                 },
-                                final: {type: "final"},
+                                done: {type: "final"},
                             },
                         },
                     },
