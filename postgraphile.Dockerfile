@@ -1,8 +1,8 @@
 # Use the official Node.js image as the base image
-FROM node:lts-alpine
+FROM oven/bun:latest
 
 # Install git
-RUN apk add git
+RUN apt update && apt install -y git
 
 # Set the working directory to /app
 WORKDIR /app
@@ -11,7 +11,7 @@ WORKDIR /app
 COPY ./package.json ./yarn.lock ./
 
 # Install dependencies
-RUN yarn install --production --frozen-lockfile
+RUN bun install
 
 # Copy the postgraphile script files to the working directory
 COPY postgraphile ./
@@ -20,4 +20,4 @@ COPY postgraphile ./
 EXPOSE 5000
 
 # Start PostGraphile when the container starts
-CMD node ./postgraphile/main.js
+CMD bun ./postgraphile/main.js
